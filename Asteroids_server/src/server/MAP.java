@@ -92,6 +92,33 @@ interface MAP {
 	   public static final String ADD = "add";
 	   public static final String REMOVE = "rem";
 	   public static final String SET = "set";
+	   
+	   /**
+	    * "crea","sh_#"
+	    */
+	   public static final String [] SONIDO_CREAR ={"crea","sh_#"};
+	   
+	   public static final String [] SONIDO_DISPARO = {"geve","shot"};
+	   
+	   public static final String [] SONIDO_EXP_GRAN = {"geve","kill","*algo","ast1"};
+	   
+	   public static final String [] SONIDO_EXP_MEDI = {"geve","kill","*algo","ast2"};
+	   
+	   public static final String [] SONIDO_EXP_PEQ = {"geve","kill","*algo","ast3"};
+	   
+	   public static final String [] SONIDO_UFO_ACTIVO = {"crea","ufo"};
+	   
+	   public static final String [] SONIDO_UFO_MUERE = {"geve","kill","*algo","ufo"};
+	   
+	   public static final String [] SONIDO_UFO_SALE = {"geve","out","ufo"};
+	   
+	   public static final String [] SONIDO_NAVE_0VIDA = {"geve","gaov","sh_#"};
+	   
+	   public static final String [] SONIDO_DESC_JUGADOR = {"disc","sh_#"};
+	   
+	   public static final String SONIDO_BEGIN_GAME = "begin";
+	   
+	   public static final String SONIDO_END_GAME = "endg";
 
 
 
