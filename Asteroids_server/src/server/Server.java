@@ -63,26 +63,30 @@ class Server extends Thread implements MAP{
 		boolean h = false;
 		Random r = new Random();
 		int i=0;
-		try{
-			while (h==false){
-				Thread.sleep(6);
-				i = r.nextInt(65500);
-				i=i+1;
-				Sserver = new ServerSocket(i);
-				if (Sserver!=null && Sserver.getLocalPort()==i){
-					this.port=i;
-					this.active=true;
-					h=true;
-				}else{
-					this.active=false;
-					h=false;
+		while (this.active==false){
+			try{
+				while (h==false){
+					Thread.sleep(6);
+					i = r.nextInt(65500);
+					++i;
+					Sserver = new ServerSocket(i);
+					if (Sserver!=null && Sserver.getLocalPort()==i){
+						this.port=i;
+						this.active=true;
+						h=true;
+					}else{
+						this.active=false;
+						h=false;
+					}
+					
 				}
-				
+			}catch(Exception e){
+				this.active=false;
+				h = false;
+				e.printStackTrace();
 			}
-		}catch(Exception e){
-			h = false;
-			e.printStackTrace();
 		}
+		
 		
 	}
 
