@@ -87,7 +87,7 @@ interface MAP {
 	   // i envia canvis a marcador mitjançant aquests dos
 	   // pnts:*id:add|rem|set:*+-quantitat*/
 	   public static final String POINTS = "pnts";
-	   public static final String LIVES = "life"; // life:sh_#:+-=quantitat
+	   public static final String LIFES = "life"; // life:sh_#:+-=quantitat
 
 	   public static final String ADD = "add";
 	   public static final String REMOVE = "rem";
