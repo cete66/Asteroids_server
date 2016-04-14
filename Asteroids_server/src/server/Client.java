@@ -20,7 +20,7 @@ class Client extends Thread implements MAP{
 	//private int ordenMapa;
 	private Server server;
 	
-	/**Pasar revision con los demas  - falta poner begin y endg - 3/4/16 **/
+	/**Pasar revision con los demas  - falta poner begin y endg - codigo corregido - 14/4/16 **/
 	
 	// EL SPWN ES PARA AVISAR A SONIDO Y LUZ DE CAMBIO DE PANTALLA
 	//TODO EL BEGIN = CUANDO CONECTE UN MODULO DE LUZ Y NO HABIAN Y HAY MAPA Y JUGADOR AVISAR, LO MISMO EL DE LUZ
@@ -100,7 +100,7 @@ class Client extends Thread implements MAP{
 		long idMando=-1; 
 		boolean isMando=false;
 		
-		if (isMando(code[1])){ //ver si contiene sh_#
+		if (isMando(code[1])){ //ver si contiene sh_
 			isMando=true;
 			idMando=descartarSH_(code[1]);
 		}
@@ -141,7 +141,7 @@ class Client extends Thread implements MAP{
 			for (int i = 0; i < this.server.getMandos().size(); i++) {
 				Client c = this.server.getMandos().get(i);
 				if (c.getId()==idMando){
-					c.getOut().println(msg);break;
+					c.getOut().println(MAP.CHANGE_SCREEN+MAP.CONCAT+MAP.SHIP+c.getId());break;
 				}
 			}
 		}
@@ -165,8 +165,8 @@ class Client extends Thread implements MAP{
 		
 	}
 	private boolean isMando(String string) {
-		
-		return string.substring(0, 3).equals("sh_#");
+		//sh_
+		return string.substring(0, 3).equals(MAP.SHIP);
 	}
 	private void gameEvent(String string, Client c) {
 
@@ -192,14 +192,14 @@ class Client extends Thread implements MAP{
 	private void dosTokens(String[] code, Client c) {
 
 		switch (code[0]) {
-		case MAP.DISCONNECT:discMando(code[1],c);break;
-		case MAP.GAME_OVER:gaovMando(code[1],c);break;
+		case MAP.DISCONNECT:discMando(c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- SOLO LO RECIBO DE MANDOS
+		case MAP.GAME_OVER:gaovMando(code,c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- quién me envia esto ??
 
 		default:System.err.println("UNHANDLED MSG ON  'dosTokens' method with code[0] = "+code[0]);break;
 		}
 		
 	}
-	private void gaovMando(String string, Client c) {
+	private void gaovMando(String[] code, Client c) {
 
 		new Thread(new Runnable() {
 			
@@ -211,17 +211,17 @@ class Client extends Thread implements MAP{
 				if (r>0){
 					--r;
 				}
-				Client.this.server.getMluces().get(r).getOut().println(MAP.GAME_OVER+":"+string);
+				Client.this.server.getMluces().get(r).getOut().println(code);
 				
 				r = rand.nextInt(Client.this.server.getMsonidos().size());
 				if (r>0){
 					--r;
 				}
-				Client.this.server.getMsonidos().get(r).getOut().println(MAP.GAME_OVER+":"+string);
+				Client.this.server.getMsonidos().get(r).getOut().println(code);
 				rand=null;
 				
 				for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-					Client.this.server.getMpuntuaciones().get(i).getOut().println(MAP.GAME_OVER+":"+string);
+					Client.this.server.getMpuntuaciones().get(i).getOut().println(code);
 				}
 				
 			}
@@ -229,11 +229,18 @@ class Client extends Thread implements MAP{
 		
 		
 		try{
-			long shId =descartarSH_(string);
+			long shId =descartarSH_(code[1]);
 			
 			for (int i = 0; i < this.server.getMandos().size() && shId!=-1; i++) {
 				if (this.server.getMandos().get(i).getId()==shId){
-					c.getOut().println(MAP.GAME_OVER+":"+string);break;
+					c.getOut().println(MAP.GAME_OVER+MAP.SHIP+shId);
+					try{
+						//discMando(c);
+						eliminarCliente(c);
+					}catch(Exception e){
+						e.printStackTrace();
+					}
+					break;
 					
 				}
 			}
@@ -245,7 +252,7 @@ class Client extends Thread implements MAP{
 		}
 		
 	}
-	private void discMando(String string, Client c) {
+	private void discMando(Client c) {
 			
 		try{
 			for (int i = 0; i < this.server.getMandos().size(); i++) {
@@ -261,17 +268,17 @@ class Client extends Thread implements MAP{
 			if (r>0){
 				--r;
 			}
-			this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+string);
+			this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
 			
 			r = rand.nextInt(this.server.getMsonidos().size());
 			if (r>0){
 				--r;
 			}
-			this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+string);
+			this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
 			rand=null;
 			
 			for (int i = 0; i < this.server.getMpuntuaciones().size(); i++) {
-				this.server.getMpuntuaciones().get(i).getOut().println(MAP.DISCONNECT+MAP.CONCAT+string);
+				this.server.getMpuntuaciones().get(i).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP+c.getId());
 			}
 			
 			
@@ -350,7 +357,7 @@ class Client extends Thread implements MAP{
 	}
 	private void sendKeyEvent(String[] code, Client c) {
 		String msg = obtenerMsg(code);
-		long screenId = descartarSH_(code[1]);
+		long screenId = /*descartarSH_(code[1]);*/Long.parseLong(code[1]);
 		
 		for (int i = 0; i < this.server.getMapas().size() && screenId!=-1; i++) {
 			if (this.server.getMapas().get(i).getId()==screenId){
@@ -379,10 +386,14 @@ class Client extends Thread implements MAP{
 	}
 	private String obtenerMsg(String[] code) {
 		String s="";
-		
-		for (int i = 0; i < code.length; i++) {
-			s=s+MAP.CONCAT+code[i];
+		s=code[0];
+		if (code.length>1){
+			
+			for (int i = 1; i < code.length; i++) {
+				s=s+MAP.CONCAT+code[i];
+			}
 		}
+		
 		System.out.println("code tokenizado: "+s);
 		return s;
 	}
@@ -407,42 +418,41 @@ class Client extends Thread implements MAP{
 	private void descNoMando(Client c) {
 		
 		try {
-			c.client.close();
+			
 			
 			
 			for (int i = 0; i < this.server.getAnonimo().size() && c!=null && c.done==false; i++) {
 				if (this.server.getAnonimo().get(i).getId()==c.getId()){
 					this.server.getAnonimo().remove(i);
-					c.done=true;break;
-				}
-			}
-			for (int i = 0; i < this.server.getMandos().size() && c!=null && c.done==false; i++) {
-				if (this.server.getMandos().get(i).getId()==c.getId()){
-					this.server.getMandos().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMapas().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMapas().get(i).getId()==c.getId()){
 					this.server.getMapas().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}			
 			}
 			for (int i = 0; i < this.server.getMluces().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMluces().get(i).getId()==c.getId()){
 					this.server.getMluces().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMpuntuaciones().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMpuntuaciones().get(i).getId()==c.getId()){
 					this.server.getMpuntuaciones().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMsonidos().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMsonidos().get(i).getId()==c.getId()){
 					this.server.getMsonidos().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
@@ -500,12 +510,12 @@ class Client extends Thread implements MAP{
 		
 		this.server.getMandos().add(c);
 		
-		notifyClientId(c,MAP.CONTROLER_MDL);
+		c.getOut().println(MAP.CONTROLER_MDL+MAP.CONCAT+MAP.SHIP+c.getId());
 		
 	}
 	private void notifyClientId(Client c, String s) {
 		
-		c.getOut().println(s+MAP.CONCAT+"sh_#"+c.getId());
+		c.getOut().println(s+MAP.CONCAT+c.getId());
 		
 	}
 	private void actualizarPanel() {
@@ -519,41 +529,47 @@ class Client extends Thread implements MAP{
 	private void eliminarCliente(Client c) {
 		
 		try {
-			c.client.close();
+			
 			
 			for (int i = 0; i < this.server.getAnonimo().size() && c!=null && c.done==false; i++) {
 				if (this.server.getAnonimo().get(i).getId()==c.getId()){
 					this.server.getAnonimo().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMandos().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMandos().get(i).getId()==c.getId()){
 					this.server.getMandos().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMapas().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMapas().get(i).getId()==c.getId()){
 					this.server.getMapas().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}			
 			}
 			for (int i = 0; i < this.server.getMluces().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMluces().get(i).getId()==c.getId()){
 					this.server.getMluces().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMpuntuaciones().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMpuntuaciones().get(i).getId()==c.getId()){
 					this.server.getMpuntuaciones().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}
 			for (int i = 0; i < this.server.getMsonidos().size() && c!=null && c.done==false; i++) {
 				if (this.server.getMsonidos().get(i).getId()==c.getId()){
 					this.server.getMsonidos().remove(i);
+					c.client.close();
 					c.done=true;break;
 				}
 			}

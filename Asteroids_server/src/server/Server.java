@@ -33,12 +33,10 @@ class Server extends Thread implements MAP{
 	private Thread server;
 	private boolean active;
 	private volatile Stack<Client> Mpuntuaciones;
-	private ControlPanel panel;
 	
 	
-	private Server (int port, ControlPanel panel){
+	protected Server (int port){
 		this.port=port;
-		this.panel=panel;
 		this.active=true;
 		mapas = new Stack<>();
 		mandos = new Stack<>();
@@ -81,7 +79,7 @@ class Server extends Thread implements MAP{
 								 client.getInputStream( ) ) );
 								 PrintWriter out = new PrintWriter( client.getOutputStream( ), true );
 						 tratarClient(in,out,client);
-						 System.out.println("DESPUES DE TRATAR CLIENTE");
+						 
 					}catch(Exception e){
 						//System.exit(1);
 						active=false;
@@ -112,7 +110,7 @@ class Server extends Thread implements MAP{
 			@Override
 			public void run() {
 				try {
-					Server.this.bcListener = new DatagramSocket(MAP.BROAD_PORT, InetAddress.getByName("0.0.0.0"));
+					Server.this.bcListener = new DatagramSocket(Server.this.port, InetAddress.getByName("0.0.0.0"));
 					Server.this.bcListener.setBroadcast(true);
 					while (Server.this.isActive()){
 						System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets! I'm on port "+Server.this.port);
@@ -220,7 +218,7 @@ class Server extends Thread implements MAP{
 		return port;
 	}
 
-	protected static ServerSocket getSserver() {
+	protected ServerSocket getSserver() {
 		return Sserver;
 	}
 
@@ -248,7 +246,4 @@ class Server extends Thread implements MAP{
 		return Mpuntuaciones;
 	}
 
-	protected ControlPanel getPanel() {
-		return panel;
-	}
 }
