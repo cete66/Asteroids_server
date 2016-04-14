@@ -200,6 +200,8 @@ class Client extends Thread implements MAP{
 		
 	}
 	private void gaovMando(String[] code, Client c) {
+		
+		String s = obtenerMsg(code);
 
 		new Thread(new Runnable() {
 			
@@ -211,17 +213,17 @@ class Client extends Thread implements MAP{
 				if (r>0){
 					--r;
 				}
-				Client.this.server.getMluces().get(r).getOut().println(code);
+				Client.this.server.getMluces().get(r).getOut().println(s);
 				
 				r = rand.nextInt(Client.this.server.getMsonidos().size());
 				if (r>0){
 					--r;
 				}
-				Client.this.server.getMsonidos().get(r).getOut().println(code);
+				Client.this.server.getMsonidos().get(r).getOut().println(s);
 				rand=null;
 				
 				for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-					Client.this.server.getMpuntuaciones().get(i).getOut().println(code);
+					Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
 				}
 				
 			}
