@@ -149,19 +149,24 @@ class Client extends Thread implements MAP{
 	}
 	protected void avisarSpwn(String tipo) {
 		
-		Random rand = new Random();
-		int r = rand.nextInt(Client.this.server.getMluces().size());
-		if (r>0){
-			--r;
+		try{
+			Random rand = new Random();
+			int r = rand.nextInt(Client.this.server.getMluces().size());
+			if (r>0){
+				--r;
+			}
+			Client.this.server.getMluces().get(r).getOut().println(MAP.SPAWN+MAP.CONCAT+tipo);
+			
+			r = rand.nextInt(Client.this.server.getMsonidos().size());
+			if (r>0){
+				--r;
+			}
+			Client.this.server.getMsonidos().get(r).getOut().println(MAP.SPAWN+MAP.CONCAT+tipo);
+			rand=null;
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		Client.this.server.getMluces().get(r).getOut().println(MAP.SPAWN+MAP.CONCAT+tipo);
 		
-		r = rand.nextInt(Client.this.server.getMsonidos().size());
-		if (r>0){
-			--r;
-		}
-		Client.this.server.getMsonidos().get(r).getOut().println(MAP.SPAWN+MAP.CONCAT+tipo);
-		rand=null;
 		
 	}
 	private boolean isMando(String string) {
@@ -170,23 +175,28 @@ class Client extends Thread implements MAP{
 	}
 	private void gameEvent(String string, Client c) {
 
-		Random rand = new Random();
-		int r = rand.nextInt(Client.this.server.getMluces().size());
-		if (r>0){
-			--r;
+		try{
+			Random rand = new Random();
+			int r = rand.nextInt(Client.this.server.getMluces().size());
+			if (r>0){
+				--r;
+			}
+			Client.this.server.getMluces().get(r).getOut().println(string);
+			
+			r = rand.nextInt(Client.this.server.getMsonidos().size());
+			if (r>0){
+				--r;
+			}
+			Client.this.server.getMsonidos().get(r).getOut().println(string);
+			rand=null;
+			
+			for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+				Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		Client.this.server.getMluces().get(r).getOut().println(string);
 		
-		r = rand.nextInt(Client.this.server.getMsonidos().size());
-		if (r>0){
-			--r;
-		}
-		Client.this.server.getMsonidos().get(r).getOut().println(string);
-		rand=null;
-		
-		for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-			Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
-		}
 		
 	}
 	private void dosTokens(String[] code, Client c) {
@@ -208,23 +218,28 @@ class Client extends Thread implements MAP{
 			@Override
 			public void run() {
 
-				Random rand = new Random();
-				int r = rand.nextInt(Client.this.server.getMluces().size());
-				if (r>0){
-					--r;
+				try{
+					Random rand = new Random();
+					int r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(s);
+					
+					r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(s);
+					rand=null;
+					
+					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+						Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
 				}
-				Client.this.server.getMluces().get(r).getOut().println(s);
 				
-				r = rand.nextInt(Client.this.server.getMsonidos().size());
-				if (r>0){
-					--r;
-				}
-				Client.this.server.getMsonidos().get(r).getOut().println(s);
-				rand=null;
-				
-				for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-					Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
-				}
 				
 			}
 		}).start();
@@ -266,22 +281,22 @@ class Client extends Thread implements MAP{
 				}
 			}
 			Random rand = new Random();
-			int r = rand.nextInt(this.server.getMluces().size());
-			if (r>0){
-				--r;
-			}
-			this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
-			
-			r = rand.nextInt(this.server.getMsonidos().size());
-			if (r>0){
-				--r;
-			}
-			this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
-			rand=null;
-			
-			for (int i = 0; i < this.server.getMpuntuaciones().size(); i++) {
-				this.server.getMpuntuaciones().get(i).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP+c.getId());
-			}
+				int r = rand.nextInt(this.server.getMluces().size());
+				if (r>0){
+					--r;
+				}
+				this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
+				
+				r = rand.nextInt(this.server.getMsonidos().size());
+				if (r>0){
+					--r;
+				}
+				this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP);
+				rand=null;
+				
+				for (int i = 0; i < this.server.getMpuntuaciones().size(); i++) {
+					this.server.getMpuntuaciones().get(i).getOut().println(MAP.DISCONNECT+MAP.CONCAT+MAP.SHIP+c.getId());
+				}
 			
 			
 		}catch(Exception e){
@@ -318,23 +333,28 @@ class Client extends Thread implements MAP{
 			@Override
 			public void run() {
 
-				Random rand = new Random();
-				int r = rand.nextInt(Client.this.server.getMluces().size());
-				if (r>0){
-					--r;
+				try{
+					Random rand = new Random();
+					int r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(string);
+					
+					r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(string);
+					rand=null;
+					
+					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+						Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
 				}
-				Client.this.server.getMluces().get(r).getOut().println(string);
 				
-				r = rand.nextInt(Client.this.server.getMsonidos().size());
-				if (r>0){
-					--r;
-				}
-				Client.this.server.getMsonidos().get(r).getOut().println(string);
-				rand=null;
-				
-				for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-					Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
-				}
 				
 			}
 		}).start();
