@@ -141,7 +141,7 @@ class Client extends Thread implements MAP{
 			for (int i = 0; i < this.server.getMandos().size(); i++) {
 				Client c = this.server.getMandos().get(i);
 				if (c.getId()==idMando){
-					c.getOut().println(MAP.CHANGE_SCREEN+MAP.CONCAT+MAP.SHIP+c.getId());break;
+					c.getOut().println(MAP.CHANGE_SCREEN+MAP.CONCAT+nuevaIdMapa);break;
 				}
 			}
 		}
@@ -203,7 +203,7 @@ class Client extends Thread implements MAP{
 
 		switch (code[0]) {
 		case MAP.DISCONNECT:discMando(c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- SOLO LO RECIBO DE MANDOS
-		case MAP.GAME_OVER:gaovMando(code,c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- quién me envia esto ??
+		case MAP.GAME_OVER:gaovMando(code,c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- quiÃ©n me envia esto ??
 
 		default:System.err.println("UNHANDLED MSG ON  'dosTokens' method with code[0] = "+code[0]);break;
 		}
