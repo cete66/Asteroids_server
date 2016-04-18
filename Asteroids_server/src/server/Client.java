@@ -20,7 +20,7 @@ class Client extends Thread implements MAP{
 	//private int ordenMapa;
 	private Server server;
 	
-	/**Pasar revision con los demas  - falta poner begin y endg - codigo corregido - 14/4/16 **/
+	/**Pasar revision con los demas  - falta poner begin y endg - codigo corregido - 18/4/16 **/
 	
 	// EL SPWN ES PARA AVISAR A SONIDO Y LUZ DE CAMBIO DE PANTALLA
 	//TODO EL BEGIN = CUANDO CONECTE UN MODULO DE LUZ Y NO HABIAN Y HAY MAPA Y JUGADOR AVISAR, LO MISMO EL DE LUZ
