@@ -10,7 +10,7 @@ public class Main {
 	private static Server server;
 
 	/**
-	 * arguments: "-t puerto"
+	 * arguments: "-p puerto"
 	 * @param s
 	 */
 	public static void main(String[] s) {
@@ -35,7 +35,7 @@ public class Main {
 		try{
 			
 			String t = String.valueOf(s[0]);
-			if (t!=null && t.toLowerCase().equals("-t")){
+			if (t!=null && t.toLowerCase().equals("-p")){
 				port = Integer.parseInt(String.valueOf(s[1]));
 			}
 		}catch(Exception e){

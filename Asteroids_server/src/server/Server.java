@@ -33,6 +33,7 @@ class Server extends Thread implements MAP{
 	private Thread server;
 	private boolean active;
 	private volatile Stack<Client> Mpuntuaciones;
+	private volatile Stack<Driver> drivers;
 	
 	
 	protected Server (int port){
@@ -43,6 +44,7 @@ class Server extends Thread implements MAP{
 		Mluces = new Stack<>();
 		Msonidos = new Stack<>();
 		Mpuntuaciones = new Stack<>();
+		drivers = new Stack<>();
 	}
 	
 	public void run (){
@@ -244,6 +246,10 @@ class Server extends Thread implements MAP{
 
 	protected Stack<Client> getMpuntuaciones() {
 		return Mpuntuaciones;
+	}
+
+	protected Stack<Driver> getDrivers() {
+		return drivers;
 	}
 
 }

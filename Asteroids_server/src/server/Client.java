@@ -17,18 +17,11 @@ class Client extends Thread implements MAP{
 	private PrintWriter out;
 	private Socket client;
 	private boolean done=false;
-	//private int ordenMapa;
 	private Server server;
 	
-	/**Pasar revision con los demas  - falta poner begin y endg - codigo corregido - 18/4/16 **/
-	
-	// EL SPWN ES PARA AVISAR A SONIDO Y LUZ DE CAMBIO DE PANTALLA
-	//TODO EL BEGIN = CUANDO CONECTE UN MODULO DE LUZ Y NO HABIAN Y HAY MAPA Y JUGADOR AVISAR, LO MISMO EL DE LUZ
-	//TODO EL ENDG = CUANDO HABIA MAPA Y JUGADOR Y SE VAN TODOS. AVISAR A SONIDO Y LUZ
-	// EL GAOV = LO RECIBO DEL MAPA LO PASO AL MANDO DE LA NAVE Y A SONIDO Y LUZ
+	/** Test - Alpha 1.0 - 24/4/16 **/
 	
 	public Client (BufferedReader in, PrintWriter out, Socket client,Server server){
-		//this.ordenMapa=-1;
 		this.in=in;
 		this.out=out;
 		this.client=client;
@@ -47,7 +40,6 @@ class Client extends Thread implements MAP{
 		}
 		while (done==false){
 			try {
-				System.out.println("TRATAR CLIENTE");
 				if (in!=null){
 					line=in.readLine();
 					if (line!=null){
@@ -84,66 +76,95 @@ class Client extends Thread implements MAP{
 		//int msgFrom=0;
 		String []code = msg.toUpperCase().split(MAP.CONCAT);
 		if (code!=null){
-			switch (code.length) {
-			case 1:unToken(code[0],c);break;
-			case 2:dosTokens(code,c);break;
-			case 3:if (code[0].equals(MAP.GAME_EVENT)){gameEvent(msg,c);}else{tresTokens(code,c);}break;
-			case 4:if (code[0].equals(MAP.GAME_EVENT)){gameEvent(msg,c);}else{cuatroTokens(code,c);}break;
-			case 5:if(code[0].equals(MAP.CHANGE_SCREEN)){changeScreen(code,c);}else{cincoTokens(code,c);}break;
-			default:System.err.println("UNHANDLED MSG >> "+msg);break;
+			
+			if(code[0].equals(MAP.CHANGE_SCREEN)){
+				changeScreen(code,c);
+				
+			}else if (code[0].equals(MAP.CONTROLER_MDL)){
+				newControler(code,c);
+				adviseOfNewDriver(c);
+				
+			}else if (code[0].equals(MAP.GAME_EVENT)){
+				gameEvent(code,c);
+				
+			}else{
+				switch (code.length) {
+				case 1:unToken(code[0],c);break;
+				case 2:dosTokens(code,c);break;
+				case 3:tresTokens(code,c);break;
+				case 4:cuatroTokens(code,c);break;
+				case 5:cincoTokens(code,c);break;
+				default:System.err.println("UNHANDLED MSG >> "+msg);break;
+				}
 			}
+			
+		}else{
+			System.err.println("UNHANDLED code[0] in MSG >> "+msg);
 		}
 		
 	}
-	private void changeScreen(String[] code, Client cliente) {
+	private void changeScreen(String[] code, Client mapa) {
 		
 		long idMando=-1; 
 		boolean isMando=false;
-		
-		if (isMando(code[1])){ //ver si contiene sh_
-			isMando=true;
-			idMando=descartarSH_(code[1]);
-		}
-		long nuevaIdMapa=-1;
-		String lado = code[2];
-		String msg = obtenerMsg(code);
-		
-		new Thread(new Runnable() {
+		try{
 			
-			@Override
-			public void run() {
-				
-				avisarSpwn(code[1]);
-				
+			if (isMando(code[1])){ //ver si contiene sh_
+				isMando=true;
+				idMando=descartarSH_(code[1]);
 			}
-		}).start();
-		
-		if (!this.server.getMapas().isEmpty()){
+			long nuevaIdMapa=-1;
+			String lado = code[2];
+			String msg = obtenerMsg(code);
 			
-			for (int i = 0; i < this.server.getMapas().size(); i++) {
-				Client c = this.server.getMapas().get(i);
-				if (lado.equals(MAP.RIGHT)){
-					if (c.getId()==cliente.getId() && i<(this.server.getMapas().size()-1)){
-						this.server.getMapas().get((i+1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((i+1)).getId();break;
-					}else if (c.getId()==cliente.getId() && i>0){
-						this.server.getMapas().get(0).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get(0).getId();break;
-					}
-				}else if  (lado.equals(MAP.LEFT)){
-					if (c.getId()==cliente.getId() && i>0){
-						this.server.getMapas().get((i-1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((i-1)).getId();break;
-					}else if (c.getId()==cliente.getId() && i<(this.server.getMapas().size()-1)){
-						this.server.getMapas().get((this.server.getMapas().size()-1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((this.server.getMapas().size()-1)).getId();break;
+			if (isMando ==true && !this.server.getMapas().isEmpty()){
+				
+				for (int i = 0; i < this.server.getMapas().size(); i++) {
+					Client c = this.server.getMapas().get(i);
+					if (lado.equals(MAP.RIGHT)){
+						if (c.getId()==mapa.getId() && i<(this.server.getMapas().size()-1)){
+							this.server.getMapas().get((i+1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((i+1)).getId();break;
+						}else if (c.getId()==mapa.getId() && i>0){
+							this.server.getMapas().get(0).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get(0).getId();break;
+						}
+					}else if  (lado.equals(MAP.LEFT)){
+						if (c.getId()==mapa.getId() && i>0){
+							this.server.getMapas().get((i-1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((i-1)).getId();break;
+						}else if (c.getId()==mapa.getId() && i<(this.server.getMapas().size()-1)){
+							this.server.getMapas().get((this.server.getMapas().size()-1)).getOut().println(msg);nuevaIdMapa=this.server.getMapas().get((this.server.getMapas().size()-1)).getId();break;
+						}
 					}
 				}
+				Driver d = obtenerDriver(idMando);
+				d.setIdMapa(nuevaIdMapa);
+				notifChsc();
 			}
+			
+
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		if (!this.server.getMandos().isEmpty() && nuevaIdMapa!=-1 && isMando==true){
-			for (int i = 0; i < this.server.getMandos().size(); i++) {
-				Client c = this.server.getMandos().get(i);
-				if (c.getId()==idMando){
-					c.getOut().println(MAP.CHANGE_SCREEN+MAP.CONCAT+nuevaIdMapa);break;
-				}
+		
+		
+	}
+	private void notifChsc() {
+		try{
+			String msg = MAP.CHANGE_SCREEN;
+			Random rand = new Random();
+			int r = rand.nextInt(Client.this.server.getMluces().size());
+			if (r>0){
+				--r;
 			}
+			Client.this.server.getMluces().get(r).getOut().println(msg);
+			
+			r = rand.nextInt(Client.this.server.getMsonidos().size());
+			if (r>0){
+				--r;
+			}
+			Client.this.server.getMsonidos().get(r).getOut().println(msg);
+			rand=null;
+		}catch(Exception e){
+			e.printStackTrace();
 		}
 		
 	}
@@ -169,47 +190,233 @@ class Client extends Thread implements MAP{
 		
 		
 	}
-	private boolean isMando(String string) {
+	private boolean isMando(String string) throws Exception{
 		//sh_
 		return string.substring(0, 3).equals(MAP.SHIP);
 	}
-	private void gameEvent(String string, Client c) {
+	private void gameEvent(String [] code, Client c) {
 
+		new Thread(new Runnable() {
+			public void run() {
+				String s = obtenerMsg(code);
+				try{
+					Random rand = new Random();
+					int r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(s);
+					
+					r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(s);
+					rand=null;
+					
+					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+						Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		
+		
+		switch (code[1]) {
+		case MAP.KILLING:geve_kill(code,c);break;
+		case MAP.SHOOT:geve_shoot(code,c);break;
+		case MAP.HYPERSPACE:geve_hypr(code,c);break;
+		default:System.out.println("UNHANDLED GAME_EVENT WITH LENGTH "+code.length+" AND CODE[1] = "+code[1]);break;
+		}
+		
+		
+	}
+	private void geve_kill(String[] code, Client c) {
+
+		//c == pantalla 
+		String killer = code[2];
+		String victim = "";
+		if (code.length==4){
+			victim = code[3];
+		}
+		
+		long idMandoKiller=0,idMandoVictim=0;
+		Driver driverKiller=null,driverVictim=null;
+		
 		try{
-			Random rand = new Random();
-			int r = rand.nextInt(Client.this.server.getMluces().size());
-			if (r>0){
-				--r;
-			}
-			Client.this.server.getMluces().get(r).getOut().println(string);
 			
-			r = rand.nextInt(Client.this.server.getMsonidos().size());
-			if (r>0){
-				--r;
+			if (isMando(killer)){
+				idMandoKiller = descartarSH_(killer);
+				driverKiller = obtenerDriver(idMandoKiller);
+				if (driverKiller!=null){
+					int add = obtenerPuntos(code[3]);
+					driverKiller.setPoints(driverKiller.getPoints()+ add);
+					Client cl = obtenerClient(idMandoKiller);
+					notifChangesShip(new String [] {MAP.POINTS+MAP.CONCAT+MAP.SHIP+cl.getId()+MAP.CONCAT+MAP.ADD+add}, cl);//Cambio de puntos
+				}
 			}
-			Client.this.server.getMsonidos().get(r).getOut().println(string);
-			rand=null;
-			
-			for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-				Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
+			if (!victim.equals("") && isMando(victim)){
+				idMandoVictim = descartarSH_(victim);
+				driverVictim = obtenerDriver(idMandoVictim);
+				if (driverVictim!=null){
+					Client cl = obtenerClient(idMandoVictim);
+					if (driverVictim.getLifes()>0){
+						driverVictim.setLifes(driverVictim.getLifes()-1);
+						notifChangesShip(new String [] {MAP.LIFES+MAP.CONCAT+MAP.SHIP+cl.getId()+MAP.CONCAT+MAP.REMOVE+1}, cl);//Cambio de vidas
+						spawnShip(c,obtenerClient(idMandoVictim));// LE QUEDAN VIDAS. AL MAPA LE DIGO QUÉ ID DE NAVE SPAWN
+						
+					}else{
+						notifGaov(new String []{MAP.GAME_OVER+MAP.CONCAT+MAP.SHIP+cl.getId()},cl);//Avisar de un mando -> game over
+					}
+				}
+				
+				
+			}else if (!victim.equals("")){
+				spawnObject(c,code[3]);// AVISAR SPAWN DE AST O UFO
 			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 		
+		
+		
+	}
+	private void spawnObject(Client mapa, String tipo) {
+		
+		mapa.getOut().print(MAP.SPAWN+MAP.CONCAT+tipo);
+		
+	}
+	private void notifGaov(String[] msg, Client mando) {
+		String s = obtenerMsg(msg);
+
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+
+				try{
+					Random rand = new Random();
+					int r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(s);
+					
+					r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(s);
+					rand=null;
+					
+					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+						Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				
+				
+			}
+		}).start();
+		
+		try{
+			long idMapa = obtenerDriver(mando.getId()).getIdMapa();
+			mando.getOut().println(s);
+			for (int i=0;i<this.server.getMapas().size();i++){
+				if (this.server.getMapas().get(i).getId()==idMapa){
+					this.server.getMapas().get(i).getOut().println(s);break;
+				}
+			}
+			discMando(mando);
+			
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+	/*private void gaovMando(Client mapa, Client mandoConex, Driver mandoDatos) {
+		
+		
+		
+	}*/
+	private void spawnShip(Client mapa, Client mando) {
+
+		long idMapa = obtenerDriver(mando.getId()).getIdMapa();
+		String msg = MAP.SPAWN+MAP.CONCAT+MAP.SHIP+mando.getId();
+		for (int i=0;i<this.server.getMapas().size();i++){
+			if (this.server.getMapas().get(i).getId()==idMapa){
+				this.server.getMapas().get(i).getOut().println(msg);break;
+			}
+		}
+		
+	}
+	private Client obtenerClient(long idMapa) {
+		Client client = null;
+		
+		for(Client c : this.server.getMapas()){
+			if (c.getId()==idMapa){
+				client=c;break;
+			}
+		}
+		
+		return client;
+	}
+	private int obtenerPuntos(String code3) {
+		int cant=0;
+		try{
+			if (isMando(code3)){
+				cant=MAP.KILL_SHIP;
+			}else{
+				switch (code3) {
+				case MAP.ASTEROID+1:cant=MAP.KILL_AST_G;break;
+				case MAP.ASTEROID+2:cant=MAP.KILL_AST_M;break;
+				case MAP.ASTEROID+3:cant=MAP.KILL_AST_P;break;
+				case MAP.UFO:cant=MAP.KILL_UFO;break;
+				default:System.out.println("UNHANDLED CODE[3] UNKWON TYPE OF OBJECT: "+code3);break;
+				}
+			}
+		}catch(Exception e){
+			cant=-1;
+			e.printStackTrace();
+		}
+		
+		
+		
+		
+		return cant;
+	}
+	private Driver obtenerDriver(long idMando) {
+		Driver d = null;
+		
+		for (int i=0;i<this.server.getDrivers().size();i++){
+			if (this.server.getDrivers().get(i).getClient().getId()==idMando){
+				d = this.server.getDrivers().get(i);break;
+			}
+		}
+		return d;
+	}
+	private void geve_shoot(String[] code, Client c) {
+		// YA ESTA NOTIFICADO EN GAME_EVENT
+		
+	}
+	private void geve_hypr(String[] code, Client c) {
+		// YA ESTA NOTIFICADO EN GAME_EVENT
+		
 	}
 	private void dosTokens(String[] code, Client c) {
 
 		switch (code[0]) {
 		case MAP.DISCONNECT:discMando(c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- SOLO LO RECIBO DE MANDOS
-		case MAP.GAME_OVER:gaovMando(code,c);break;//MSG DE 2 TOKENS CON CABECERA == MAP.DISCONNECT -- quiÃ©n me envia esto ??
-
 		default:System.err.println("UNHANDLED MSG ON  'dosTokens' method with code[0] = "+code[0]);break;
 		}
 		
 	}
-	private void gaovMando(String[] code, Client c) {
+	/*private void gaovMando(String[] code, Client c) {
 		
 		String s = obtenerMsg(code);
 
@@ -268,12 +475,14 @@ class Client extends Thread implements MAP{
 			e.printStackTrace();
 		}
 		
-	}
+	}*/
 	private void discMando(Client c) {
 			
 		try{
 			for (int i = 0; i < this.server.getMandos().size(); i++) {
 				if (this.server.getMandos().get(i).getId()==c.getId()){
+					Driver d = obtenerDriver(this.server.getMandos().get(i).getId());
+					d=null;
 					this.server.getMandos().remove(i);
 					c.client.close();
 					c.done=true;break;
@@ -306,23 +515,19 @@ class Client extends Thread implements MAP{
 		
 	}
 	private void tresTokens(String[] code, Client c) {
-		// TODO POR AHORA TRATADOR EN 'gameEvent' ya que solo hay geve en esta condicion
-
-		System.err.println("UNHANDLED MSG ON  'tresTokens' method with code[0] = "+code[0]);
-
-		
-	}
-	private void cuatroTokens(String[] code, Client c) {
-		// TODO TODOS DE 4 SALVO EL GEVE DE 4 TOKENS
+		// POR AHORA TRATADO EN 'gameEvent' ya que solo hay geve en esta condicion
 		
 		switch (code[0]) {
 		case MAP.KEY_EVENT:sendKeyEvent(code,c);break;
-		case MAP.POINTS:notifChangesShip(code,c);break;
-		case MAP.LIFES:notifChangesShip(code,c);break;
-
+		default:System.err.println("UNHANDLED MSG ON  'tresTokens' method with code[0] = "+code[0]);break;
+		}	
+	}
+	private void cuatroTokens(String[] code, Client c) {
+		// TODOS DE 4 SALVO EL GEVE DE 4 TOKENS
+		
+		switch (code[0]) {
 		default:System.err.println("UNHANDLED MSG ON  'cuatroTokens' method with code[0] = "+code[0]);break;
 		}
-		
 	}
 	private void notifChangesShip(String[] code, Client c) {
 		
@@ -354,41 +559,43 @@ class Client extends Thread implements MAP{
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				
-				
 			}
 		}).start();
 		
 		
 		try{
-			long shId =descartarSH_(code[1]);
+			c.getOut().println(string);
+			long shId =obtenerDriver(c.getId()).getIdMapa();
 			
 			for (int i = 0; i < this.server.getMandos().size() && shId!=-1; i++) {
 				if (this.server.getMandos().get(i).getId()==shId){
-					c.getOut().println(string);break;
-					
+					c.getOut().println(string);break;	
+				}
+			}		
+		}catch(Exception e){
+			e.printStackTrace();
+		}	
+	}
+	/**
+	 * Falta la id del mapa 
+	 * @param code
+	 * @param c
+	 */
+	private void sendKeyEvent(String[] code, Client c) {
+		//String msg = obtenerMsg(code);
+		try{
+			long screenId = obtenerDriver(c.getId()).getIdMapa();
+			
+			for (int i = 0; i < this.server.getMapas().size() && screenId!=-1; i++) {
+				if (this.server.getMapas().get(i).getId()==screenId){
+					this.server.getMapas().get(i).getOut().println(code[0]+MAP.CONCAT+MAP.SHIP+c.getId()+MAP.CONCAT+code[1]+MAP.CONCAT+code[2]);break;
 				}
 			}
-			
-			
-			
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
 	}
-	private void sendKeyEvent(String[] code, Client c) {
-		String msg = obtenerMsg(code);
-		long screenId = /*descartarSH_(code[1]);*/Long.parseLong(code[1]);
-		
-		for (int i = 0; i < this.server.getMapas().size() && screenId!=-1; i++) {
-			if (this.server.getMapas().get(i).getId()==screenId){
-				this.server.getMapas().get(i).getOut().println(msg);break;
-			}
-		}
-		
-	}
-	private long descartarSH_(String string) {
+	private long descartarSH_(String string) throws Exception{
 		
 		String id = "";
 		long shId =-1;
@@ -400,6 +607,7 @@ class Client extends Thread implements MAP{
 		}catch(Exception e){
 			shId=-1;
 			e.printStackTrace();
+			
 		}
 		
 		System.out.println("id returned: "+shId);
@@ -420,15 +628,17 @@ class Client extends Thread implements MAP{
 		return s;
 	}
 	private void cincoTokens(String[] code, Client c) {
-		// TODO POR AHORA SON SOLO TODOS LOS DE CHSC
-		System.err.println("UNHANDLED MSG ON  'cincoTokens' method with code[0] = "+code[0]);
+		// POR AHORA SON SOLO TODOS LOS DE CHSC
+		switch (code[0]) {
+		default:System.err.println("UNHANDLED MSG ON  'cincoTokens' method with code[0] = "+code[0]);break;
+		}
+		
 	}
 	private void unToken(String s, Client c) {
 		
 		switch (s) {
-		case MAP.CONTROLER_MDL:newControler(c);break;
 		case MAP.SCREEN_MDL:newScreen(c);break;
-		case MAP.SCORE_MDL:newScoreScr(c);break;
+		case MAP.SCORE_MDL:newScoreScr(c);updateRecordsModules(c);break;
 		case MAP.SOUND_MDL:newSoundM(c);break;
 		case MAP.LIGHT_MDL:newLightM(c);break;
 		case MAP.PING:c.getOut().println(MAP.PING);break;
@@ -437,6 +647,94 @@ class Client extends Thread implements MAP{
 		}
 		
 	}
+	/**
+	 * a luz, sonido y datos
+	 * @param c
+	 */
+	private void adviseOfNewDriver(Client c) {
+		
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+
+				try{
+					Driver d = obtenerDriver(c.getId());
+					Random rand = new Random();
+					int r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(MAP.CREATE);
+					
+					r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r>0){
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(MAP.CREATE);
+					rand=null;
+					
+					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
+						Client.this.server.getMpuntuaciones().get(i).getOut().println(MAP.CREATE+MAP.CONCAT+MAP.SHIP+c.getId()+d.getName()+d.getColor().getRGB());
+						/*for (int j=0;j<Client.this.server.getDrivers().size();j++){
+							Client.this.server.getMpuntuaciones().get(i).getOut().println(MAP.CREATE+MAP.CONCAT+Client.this.server.getDrivers().get(j).toString());
+						}*/
+						
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+				
+				
+			}
+		}).start();
+		
+	}
+	/**
+	 * Cada vez que se conecte un Mpuntuaciones
+	 * @param c 
+	 */
+	private void updateRecordsModules(Client c){
+		
+		String boundedDrivers ="";
+		final String head=MAP.CREATE+MAP.CONCAT;
+		boolean firstTime=true;
+		
+		if (!this.server.getDrivers().isEmpty()){
+			
+			boundedDrivers=head+this.server.getDrivers().get(0).toString();
+			
+			if (this.server.getDrivers().size()>1){
+				//for (int i=0;i<this.server.getMpuntuaciones().size();i++){
+					for (int j=0;j<this.server.getDrivers().size();j++){
+						if (firstTime==true){
+							++j;firstTime=false;
+						}
+						if (boundedDrivers.equals("")){
+							boundedDrivers+=head+this.server.getDrivers().get(j).toString();
+						}else{
+							boundedDrivers+=MAP.CONCAT_COMMANDS+head+this.server.getDrivers().get(j).toString();
+						}
+						
+					}
+					//this.server.getMpuntuaciones().get(i).getOut().println(boundedDrivers);boundedDrivers="";
+					c.getOut().println(boundedDrivers);
+				//}
+				
+			}else{/**SI SOLO HAY UN MANDO**/
+				//for (int i=0;i<this.server.getMpuntuaciones().size();i++){
+					//this.server.getMpuntuaciones().get(i).getOut().println(boundedDrivers);
+				//}
+				c.getOut().println(boundedDrivers);
+			}
+			
+			
+		}
+		
+	}
+	/*private boolean isNewClient(String s) {
+		return s.equals(MAP.CONTROLER_MDL);
+	}*/
 	private void descNoMando(Client c) {
 		
 		try {
@@ -489,7 +787,7 @@ class Client extends Thread implements MAP{
 		
 		this.server.getMluces().add(c);
 		
-		notifyClientId(c,MAP.LIGHT_MDL);
+		notifyClientId(c);
 		
 	}
 	private void removeAnonimous(Client c) {
@@ -509,14 +807,14 @@ class Client extends Thread implements MAP{
 		
 		this.server.getMsonidos().add(c);
 		
-		notifyClientId(c,MAP.SOUND_MDL);
+		notifyClientId(c);
 	}
 	private void newScoreScr(Client c) {
 		removeAnonimous(c);
 		
 		this.server.getMpuntuaciones().add(c);
 		
-		notifyClientId(c,MAP.SCORE_MDL);
+		notifyClientId(c);
 		
 	}
 	private void newScreen(Client c) {
@@ -524,35 +822,28 @@ class Client extends Thread implements MAP{
 		
 		this.server.getMapas().add(c);
 		
-		notifyClientId(c,MAP.SCREEN_MDL);
+		notifyClientId(c);
 		
 	}
-	private void newControler(Client c) {
+	private void newControler(String[] code, Client c) {
 		removeAnonimous(c);
 		
 		this.server.getMandos().add(c);
+		this.server.getDrivers().add(new Driver(c,code[1],code[2]));
 		
-		c.getOut().println(MAP.CONTROLER_MDL+MAP.CONCAT+MAP.SHIP+c.getId());
-		
-	}
-	private void notifyClientId(Client c, String s) {
-		
-		c.getOut().println(s+MAP.CONCAT+c.getId());
+		notifyClientId(c);
 		
 	}
-	private void actualizarPanel() {
-		
-		
+	private void notifyClientId(Client c) {	
+		c.getOut().println(MAP.BEGIN);
 	}
-	private void cerrarSesion(Client cliente) {
+	/*private void cerrarSesion(Client cliente) {
 		
 		
-	}
+	}*/
 	private void eliminarCliente(Client c) {
 		
 		try {
-			
-			
 			for (int i = 0; i < this.server.getAnonimo().size() && c!=null && c.done==false; i++) {
 				if (this.server.getAnonimo().get(i).getId()==c.getId()){
 					this.server.getAnonimo().remove(i);
@@ -599,9 +890,6 @@ class Client extends Thread implements MAP{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-		
 	}
 	protected BufferedReader getIn() {
 		return in;

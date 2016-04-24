@@ -23,6 +23,11 @@ interface MAP {
 	 * broadcast port
 	 */
 	public static final int BROAD_PORT = 36560;
+	public static final int KILL_SHIP = 4000;
+	public static final int KILL_AST_G = 50;
+	public static final int KILL_AST_M = 200;
+	public static final int KILL_AST_P = 500;
+	public static final int KILL_UFO = 1000;
 
 	/**
 	 * server port
