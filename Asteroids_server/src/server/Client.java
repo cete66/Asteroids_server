@@ -19,7 +19,7 @@ class Client extends Thread implements MAP{
 	private boolean done=false;
 	private Server server;
 	
-	/** Test - Alpha 1.0 - 24/4/16 **/
+	/** Test - Alpha 1.1 - 25/4/16 **/
 	
 	public Client (BufferedReader in, PrintWriter out, Socket client,Server server){
 		this.in=in;
@@ -32,7 +32,7 @@ class Client extends Thread implements MAP{
 		done=false;
 		String line=null;
 		try {
-			this.client.setSoTimeout(6000000);
+			this.client.setSoTimeout(120000);
 		} catch (SocketException e1) {
 			done=true;
 			this.out.println("EXT");
@@ -265,7 +265,7 @@ class Client extends Thread implements MAP{
 					if (driverVictim.getLifes()>0){
 						driverVictim.setLifes(driverVictim.getLifes()-1);
 						notifChangesShip(new String [] {MAP.LIFES+MAP.CONCAT+MAP.SHIP+cl.getId()+MAP.CONCAT+MAP.REMOVE+1}, cl);//Cambio de vidas
-						spawnShip(c,obtenerClient(idMandoVictim));// LE QUEDAN VIDAS. AL MAPA LE DIGO QUÃ‰ ID DE NAVE SPAWN
+						spawnShip(c,obtenerClient(idMandoVictim));// LE QUEDAN VIDAS. AL MAPA LE DIGO QUÉ ID DE NAVE SPAWN
 						
 					}else{
 						notifGaov(new String []{MAP.GAME_OVER+MAP.CONCAT+MAP.SHIP+cl.getId()},cl);//Avisar de un mando -> game over
@@ -600,7 +600,7 @@ class Client extends Thread implements MAP{
 		String id = "";
 		long shId =-1;
 		try{
-			id = string.substring(3);
+			id = string.substring(MAP.SHIP.length());
 			shId=Long.parseLong(id);
 			
 			
