@@ -265,7 +265,7 @@ class Client extends Thread implements MAP{
 					if (driverVictim.getLifes()>0){
 						driverVictim.setLifes(driverVictim.getLifes()-1);
 						notifChangesShip(new String [] {MAP.LIFES+MAP.CONCAT+MAP.SHIP+cl.getId()+MAP.CONCAT+MAP.REMOVE+1}, cl);//Cambio de vidas
-						spawnShip(c,obtenerClient(idMandoVictim));// LE QUEDAN VIDAS. AL MAPA LE DIGO QUÉ ID DE NAVE SPAWN
+						spawnShip(c,obtenerClient(idMandoVictim));// LE QUEDAN VIDAS. AL MAPA LE DIGO QUÃ‰ ID DE NAVE SPAWN
 						
 					}else{
 						notifGaov(new String []{MAP.GAME_OVER+MAP.CONCAT+MAP.SHIP+cl.getId()},cl);//Avisar de un mando -> game over
@@ -600,7 +600,7 @@ class Client extends Thread implements MAP{
 		String id = "";
 		long shId =-1;
 		try{
-			id = string.substring(4);
+			id = string.substring(3);
 			shId=Long.parseLong(id);
 			
 			
