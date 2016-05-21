@@ -44,6 +44,7 @@ interface MAP {
 	   public static final String SCREEN_MDL = "screenmdl";
 	   public static final String SCORE_MDL = "scoremdl";
 	   public static final String SOUND_MDL = "soundmdl";
+	   public static final String PONG="pong";
 	   public static final String LIGHT_MDL = "lightmdl";
 
 	   /**

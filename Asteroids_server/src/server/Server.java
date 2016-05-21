@@ -45,6 +45,7 @@ class Server extends Thread implements MAP{
 		Msonidos = new Stack<>();
 		Mpuntuaciones = new Stack<>();
 		drivers = new Stack<>();
+		anonimo = new Stack<>();
 	}
 	
 	public void run (){
@@ -86,7 +87,7 @@ class Server extends Thread implements MAP{
 						//System.exit(1);
 						active=false;
 						closeServer();
-						System.exit(0);
+						System.exit(1);
 						e.printStackTrace();
 					}
 				}
@@ -112,10 +113,10 @@ class Server extends Thread implements MAP{
 			@Override
 			public void run() {
 				try {
-					Server.this.bcListener = new DatagramSocket(Server.this.port, InetAddress.getByName("0.0.0.0"));
+					Server.this.bcListener = new DatagramSocket(MAP.BROAD_PORT, InetAddress.getByName("0.0.0.0"));
 					Server.this.bcListener.setBroadcast(true);
 					while (Server.this.isActive()){
-						System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets! I'm on port "+Server.this.port);
+						System.out.println(getClass().getName() + ">>>Ready to receive broadcast packets! I'm on port "+MAP.BROAD_PORT);
 						//Receive a packet
 						
 						        byte[] recvBuf = new byte[15000];

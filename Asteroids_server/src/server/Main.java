@@ -30,7 +30,7 @@ public class Main {
 
 	private static int obtenerPuerto(String[] s) {
 
-		int port=1;
+		int port=MAP.PORT;
 		
 		try{
 			
