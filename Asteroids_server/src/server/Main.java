@@ -19,6 +19,9 @@ public class Main {
 			if (s!=null && !s.equals("") && s.length==2){
 				server = new Server (obtenerPuerto(s));
 				server.start();
+			}else{
+				server = new Server(MAP.PORT);
+				server.start();
 			}
 		}catch(Exception e){
 			e.printStackTrace();
