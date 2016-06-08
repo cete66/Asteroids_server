@@ -3,7 +3,7 @@ package server;
 import java.awt.Color;
 
 
-class Driver implements MAP{
+final class Driver implements MAP{
 
 	
 	private String name="notSpecified";
@@ -29,6 +29,10 @@ class Driver implements MAP{
 
 	protected int getPoints() {
 		return points;
+	}
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		throw new CloneNotSupportedException(); 
 	}
 
 

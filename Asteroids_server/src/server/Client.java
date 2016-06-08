@@ -12,7 +12,7 @@ import java.util.Random;
  * @author Robin
  *
  */
-class Client extends Thread implements MAP {
+final class Client extends Thread implements MAP {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -80,8 +80,9 @@ class Client extends Thread implements MAP {
 	private void procesarMsg(String msg, Client c) {
 		String[] code = null;
 		// int msgFrom=0;
+		msg=msg.toLowerCase();
 		if (msg.contains(MAP.CONCAT)) {
-			code = msg.toUpperCase().split(MAP.CONCAT);
+			code = msg.toLowerCase().split(MAP.CONCAT);
 		} else if (!msg.contains(MAP.CONCAT)) {
 
 			if (msg.equals(MAP.CONTROLER_MDL)) {
@@ -95,10 +96,10 @@ class Client extends Thread implements MAP {
 		System.out.println("MSG >> " + msg);
 		if (code != null) {
 
-			if (code[0].equals(MAP.CHANGE_SCREEN)) {
+			if (code[0].toLowerCase().equals(MAP.CHANGE_SCREEN)) {
 				changeScreen(code, c);
 
-			} else if (code[0].equals(MAP.GAME_EVENT)) {
+			} else if (code[0].toLowerCase().equals(MAP.GAME_EVENT)) {
 				gameEvent(code, c);
 
 			} else {
@@ -139,6 +140,15 @@ class Client extends Thread implements MAP {
 			String msg = obtenerMsg(code);
 
 			if (isMando == true && !this.server.getMapas().isEmpty()) {
+				
+				if (this.server.getMapas().size()==1){
+					this.server.getMapas().get(0).getOut().println(msg);
+					nuevaIdMapa = this.server.getMapas().get(0).getId();
+					Driver d = obtenerDriver(idMando);
+					d.setIdMapa(nuevaIdMapa);
+					notifChsc();
+					return;
+				}
 
 				for (int i = 0; i < this.server.getMapas().size(); i++) {
 					Client c = this.server.getMapas().get(i);
@@ -167,6 +177,33 @@ class Client extends Thread implements MAP {
 				Driver d = obtenerDriver(idMando);
 				d.setIdMapa(nuevaIdMapa);
 				notifChsc();
+			}else if (isMando==false && !this.server.getMapas().isEmpty()){
+				
+				if (this.server.getMapas().size()==1){
+					this.server.getMapas().get(0).getOut().println(msg);
+					return;
+				}
+				
+				for (int i = 0; i < this.server.getMapas().size(); i++) {
+					Client c = this.server.getMapas().get(i);
+					if (lado.equals(MAP.RIGHT)) {
+						if (c.getId() == mapa.getId() && i < (this.server.getMapas().size() - 1)) {
+							this.server.getMapas().get((i + 1)).getOut().println(msg);
+							break;
+						} else if (c.getId() == mapa.getId() && i > 0) {
+							this.server.getMapas().get(0).getOut().println(msg);
+							break;
+						}
+					} else if (lado.equals(MAP.LEFT)) {
+						if (c.getId() == mapa.getId() && i > 0) {
+							this.server.getMapas().get((i - 1)).getOut().println(msg);
+							break;
+						} else if (c.getId() == mapa.getId() && i < (this.server.getMapas().size() - 1)) {
+							this.server.getMapas().get((this.server.getMapas().size() - 1)).getOut().println(msg);
+							break;
+						}
+					}
+				}
 			}
 
 		} catch (Exception e) {
@@ -179,17 +216,22 @@ class Client extends Thread implements MAP {
 		try {
 			String msg = MAP.CHANGE_SCREEN;
 			Random rand = new Random();
-			int r = rand.nextInt(Client.this.server.getMluces().size());
-			if (r > 0) {
-				--r;
+			int r=0;
+			if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+				 r = rand.nextInt(Client.this.server.getMluces().size());
+					if (r > 0) {
+						--r;
+					}
+					Client.this.server.getMluces().get(r).getOut().println(msg);
 			}
-			Client.this.server.getMluces().get(r).getOut().println(msg);
+			if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+				 r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r > 0) {
+						--r;
+					}
+					Client.this.server.getMsonidos().get(r).getOut().println(msg);
+			}
 
-			r = rand.nextInt(Client.this.server.getMsonidos().size());
-			if (r > 0) {
-				--r;
-			}
-			Client.this.server.getMsonidos().get(r).getOut().println(msg);
 			rand = null;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -201,17 +243,23 @@ class Client extends Thread implements MAP {
 
 		try {
 			Random rand = new Random();
-			int r = rand.nextInt(Client.this.server.getMluces().size());
+			int r=0;
+			if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+				r = rand.nextInt(Client.this.server.getMluces().size());
 			if (r > 0) {
 				--r;
 			}
 			Client.this.server.getMluces().get(r).getOut().println(MAP.SPAWN + MAP.CONCAT + tipo);
-
-			r = rand.nextInt(Client.this.server.getMsonidos().size());
-			if (r > 0) {
-				--r;
 			}
+			
+			if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+				r = rand.nextInt(Client.this.server.getMsonidos().size());
+					if (r > 0) {
+						--r;
+					}
 			Client.this.server.getMsonidos().get(r).getOut().println(MAP.SPAWN + MAP.CONCAT + tipo);
+			}
+			
 			rand = null;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -231,19 +279,34 @@ class Client extends Thread implements MAP {
 				String s = obtenerMsg(code);
 				try {
 					Random rand = new Random();
-					int r = rand.nextInt(Client.this.server.getMluces().size());
-					if (r > 0) {
-						--r;
+					int r=0;
+					/*
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						
 					}
-					Client.this.server.getMluces().get(r).getOut().println(s);
+					*/
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						 r = rand.nextInt(Client.this.server.getMluces().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMluces().get(r).getOut().println(s);
+					}
+					
 
-					r = rand.nextInt(Client.this.server.getMsonidos().size());
-					if (r > 0) {
-						--r;
+					if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+						r = rand.nextInt(Client.this.server.getMsonidos().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMsonidos().get(r).getOut().println(s);
 					}
-					Client.this.server.getMsonidos().get(r).getOut().println(s);
+					
 					rand = null;
 
+					if (Client.this.server.getMpuntuaciones()==null ||Client.this.server.getMpuntuaciones().isEmpty() && !code[0].toLowerCase().equals(MAP.KILLING.toLowerCase())){
+						return;
+					}
 					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
 						Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
 					}
@@ -253,7 +316,7 @@ class Client extends Thread implements MAP {
 			}
 		}).start();
 
-		switch (code[1]) {
+		switch (code[1].toLowerCase()) {
 		case MAP.KILLING:
 			geve_kill(code, c);
 			break;
@@ -352,18 +415,28 @@ class Client extends Thread implements MAP {
 
 				try {
 					Random rand = new Random();
-					int r = rand.nextInt(Client.this.server.getMluces().size());
-					if (r > 0) {
-						--r;
+					int r=0;
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						 r = rand.nextInt(Client.this.server.getMluces().size());
+							if (r > 0) {
+								--r;
+							}
+							Client.this.server.getMluces().get(r).getOut().println(s);
 					}
-					Client.this.server.getMluces().get(r).getOut().println(s);
+				
 
-					r = rand.nextInt(Client.this.server.getMsonidos().size());
-					if (r > 0) {
-						--r;
+					if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+						r = rand.nextInt(Client.this.server.getMsonidos().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMsonidos().get(r).getOut().println(s);
 					}
-					Client.this.server.getMsonidos().get(r).getOut().println(s);
+					
 					rand = null;
+					if ( Client.this.server.getMpuntuaciones().isEmpty()){
+						return;
+					}
 
 					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
 						Client.this.server.getMpuntuaciones().get(i).getOut().println(s);
@@ -392,14 +465,6 @@ class Client extends Thread implements MAP {
 
 	}
 
-	/*
-	 * private void gaovMando(Client mapa, Client mandoConex, Driver mandoDatos)
-	 * {
-	 * 
-	 * 
-	 * 
-	 * }
-	 */
 	private void spawnShip(Client mapa, Client mando) {
 
 		long idMapa = obtenerDriver(mando.getId()).getIdMapa();
@@ -471,13 +536,12 @@ class Client extends Thread implements MAP {
 	}
 
 	private void geve_shoot(String[] code, Client c) {
-		// YA ESTA NOTIFICADO EN GAME_EVENT
-
+		//YA ESTA TRATADO EN EL METODO QUE LLAMA A ESTE METODO
+	
 	}
 
 	private void geve_hypr(String[] code, Client c) {
-		// YA ESTA NOTIFICADO EN GAME_EVENT
-
+		//YA ESTA TRATADO EN EL METODO QUE LLAMA A ESTE METODO
 	}
 
 	private void dosTokens(String[] code, Client c) {
@@ -493,50 +557,10 @@ class Client extends Thread implements MAP {
 		}
 
 	}
-
-	/*
-	 * private void gaovMando(String[] code, Client c) {
-	 * 
-	 * String s = obtenerMsg(code);
-	 * 
-	 * new Thread(new Runnable() {
-	 * 
-	 * @Override public void run() {
-	 * 
-	 * try{ Random rand = new Random(); int r =
-	 * rand.nextInt(Client.this.server.getMluces().size()); if (r>0){ --r; }
-	 * Client.this.server.getMluces().get(r).getOut().println(s);
-	 * 
-	 * r = rand.nextInt(Client.this.server.getMsonidos().size()); if (r>0){ --r;
-	 * } Client.this.server.getMsonidos().get(r).getOut().println(s); rand=null;
-	 * 
-	 * for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
-	 * Client.this.server.getMpuntuaciones().get(i).getOut().println(s); }
-	 * }catch(Exception e){ e.printStackTrace(); }
-	 * 
-	 * 
-	 * } }).start();
-	 * 
-	 * 
-	 * try{ long shId =descartarSH_(code[1]);
-	 * 
-	 * for (int i = 0; i < this.server.getMandos().size() && shId!=-1; i++) { if
-	 * (this.server.getMandos().get(i).getId()==shId){
-	 * c.getOut().println(MAP.GAME_OVER+MAP.SHIP+shId); try{ //discMando(c);
-	 * eliminarCliente(c); }catch(Exception e){ e.printStackTrace(); } break;
-	 * 
-	 * } }
-	 * 
-	 * 
-	 * 
-	 * }catch(Exception e){ e.printStackTrace(); }
-	 * 
-	 * }
-	 */
 	private void discMando(Client c) {
 
 		try {
-			Driver d=null;
+			Driver d = null;
 			for (int i = 0; i < this.server.getMandos().size(); i++) {
 				if (this.server.getMandos().get(i).getId() == c.getId()) {
 					d = obtenerDriver(this.server.getMandos().get(i).getId());
@@ -549,18 +573,28 @@ class Client extends Thread implements MAP {
 				}
 			}
 			Random rand = new Random();
-			int r = rand.nextInt(this.server.getMluces().size());
-			if (r > 0) {
-				--r;
+			int r=0;
+			if (this.server.getMluces()!=null && !this.server.getMluces().isEmpty()){
+				 r = rand.nextInt(this.server.getMluces().size());
+				if (r > 0) {
+					--r;
+				}
+				this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT + MAP.CONCAT + MAP.SHIP + c.getId());
 			}
-			this.server.getMluces().get(r).getOut().println(MAP.DISCONNECT + MAP.CONCAT + MAP.SHIP + c.getId());
+			
 
-			r = rand.nextInt(this.server.getMsonidos().size());
-			if (r > 0) {
-				--r;
+			if (this.server.getMsonidos()!=null && !this.server.getMsonidos().isEmpty()){
+				r = rand.nextInt(this.server.getMsonidos().size());
+				if (r > 0) {
+					--r;
+				}
+				this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT + MAP.CONCAT + MAP.SHIP + c.getId());
 			}
-			this.server.getMsonidos().get(r).getOut().println(MAP.DISCONNECT + MAP.CONCAT + MAP.SHIP + c.getId());
+			
 			rand = null;
+			if (this.server.getMpuntuaciones().isEmpty()){
+				return;
+			}
 
 			for (int i = 0; i < this.server.getMpuntuaciones().size(); i++) {
 				this.server.getMpuntuaciones().get(i).getOut()
@@ -576,26 +610,29 @@ class Client extends Thread implements MAP {
 	private void tresTokens(String[] code, Client c) {
 		// POR AHORA TRATADO EN 'gameEvent' ya que solo hay geve en esta
 		// condicion
-
-		switch (code[0]) {
-		case MAP.KEY_EVENT:
-			sendKeyEvent(code, c);
-			break;
-		case MAP.CREATE:
+		if (code[0].toLowerCase().equals(MAP.CREATE.toLowerCase())){
 			newDriver(code,c);
-		default:
+			
+		}else if (code[0].toLowerCase().equals(MAP.KEY_EVENT.toLowerCase())){
+			sendKeyEvent(code, c);
+		}else{
 			System.err.println("UNHANDLED MSG ON  'tresTokens' method with code[0] = " + code[0]);
-			break;
 		}
+
 	}
 
 	private void newDriver(String[] code, Client c) {
 		Client cl=null;
+		for (int i=0;i<this.server.getDrivers().size();i++){
+			if (this.server.getDrivers().get(i).getClient().getId()==c.getId()){
+				return;
+			}
+		}
 		
 		for (int i = 0; i < this.server.getMandos().size(); i++) {
 			cl = this.server.getMandos().get(i);
 			if (cl.getId()==c.getId()){
-				this.server.getDrivers().add(new Driver(c, code[0], code[1]));
+				this.server.getDrivers().add(new Driver(c, code[1], code[2]));
 				adviseOfNewDriver(c);
 				break;
 			}
@@ -623,18 +660,28 @@ class Client extends Thread implements MAP {
 
 				try {
 					Random rand = new Random();
-					int r = rand.nextInt(Client.this.server.getMluces().size());
-					if (r > 0) {
-						--r;
+					int r=0;
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						 r = rand.nextInt(Client.this.server.getMluces().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMluces().get(r).getOut().println(string);
 					}
-					Client.this.server.getMluces().get(r).getOut().println(string);
+					
 
-					r = rand.nextInt(Client.this.server.getMsonidos().size());
-					if (r > 0) {
-						--r;
+					if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+						r = rand.nextInt(Client.this.server.getMsonidos().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMsonidos().get(r).getOut().println(string);
 					}
-					Client.this.server.getMsonidos().get(r).getOut().println(string);
+					
 					rand = null;
+					if (Client.this.server.getMpuntuaciones().isEmpty()){
+						return;
+					}
 
 					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
 						Client.this.server.getMpuntuaciones().get(i).getOut().println(string);
@@ -661,7 +708,7 @@ class Client extends Thread implements MAP {
 	}
 
 	/**
-	 * Falta la id del mapa
+	 * Envia la tecla pulsada, mantenida o soltada al mapa correspondiente
 	 * 
 	 * @param code
 	 * @param c
@@ -669,7 +716,11 @@ class Client extends Thread implements MAP {
 	private void sendKeyEvent(String[] code, Client c) {
 		// String msg = obtenerMsg(code);
 		try {
-			long screenId = obtenerDriver(c.getId()).getIdMapa();
+			Driver d =  obtenerDriver(c.getId());
+			if (d==null){
+				return;
+			}
+			long screenId = d.getIdMapa();
 
 			for (int i = 0; i < this.server.getMapas().size() && screenId != -1; i++) {
 				if (this.server.getMapas().get(i).getId() == screenId) {
@@ -770,29 +821,35 @@ class Client extends Thread implements MAP {
 				try {
 					Driver d = obtenerDriver(c.getId());
 					Random rand = new Random();
-					int r = rand.nextInt(Client.this.server.getMluces().size());
-					if (r > 0) {
-						--r;
+					/*
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						
 					}
-					Client.this.server.getMluces().get(r).getOut().println(MAP.CREATE + MAP.CONCAT + MAP.SHIP + c.getId() + d.getName() + d.getColor().getRGB());
-
-					r = rand.nextInt(Client.this.server.getMsonidos().size());
-					if (r > 0) {
-						--r;
+					*/
+					int r=0;
+					if (Client.this.server.getMluces()!=null && !Client.this.server.getMluces().isEmpty()){
+						 r = rand.nextInt(Client.this.server.getMluces().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMluces().get(r).getOut().println(MAP.CREATE + MAP.CONCAT + MAP.SHIP + c.getId() + d.getName() + d.getColor().getRGB());
 					}
-					Client.this.server.getMsonidos().get(r).getOut().println(MAP.CREATE + MAP.CONCAT + MAP.SHIP + c.getId() + d.getName() + d.getColor().getRGB());
+					
+					if (Client.this.server.getMsonidos()!=null && !Client.this.server.getMsonidos().isEmpty()){
+						r = rand.nextInt(Client.this.server.getMsonidos().size());
+						if (r > 0) {
+							--r;
+						}
+						Client.this.server.getMsonidos().get(r).getOut().println(MAP.CREATE + MAP.CONCAT + MAP.SHIP + c.getId() + d.getName() + d.getColor().getRGB());
+					}
+					
 					rand = null;
-
+					if (Client.this.server.getMpuntuaciones().isEmpty()){
+						return;
+					}
 					for (int i = 0; i < Client.this.server.getMpuntuaciones().size(); i++) {
 						Client.this.server.getMpuntuaciones().get(i).getOut().println(
 								MAP.CREATE + MAP.CONCAT + MAP.SHIP + c.getId() + d.getName() + d.getColor().getRGB());
-						/*
-						 * for (int
-						 * j=0;j<Client.this.server.getDrivers().size();j++){
-						 * Client.this.server.getMpuntuaciones().get(i).getOut()
-						 * .println(MAP.CREATE+MAP.CONCAT+Client.this.server.
-						 * getDrivers().get(j).toString()); }
-						 */
 
 					}
 				} catch (Exception e) {
@@ -833,14 +890,9 @@ class Client extends Thread implements MAP {
 					}
 
 				}
-				// this.server.getMpuntuaciones().get(i).getOut().println(boundedDrivers);boundedDrivers="";
 				c.getOut().println(boundedDrivers);
-				// }
 
 			} else {/** SI SOLO HAY UN MANDO **/
-				// for (int i=0;i<this.server.getMpuntuaciones().size();i++){
-				// this.server.getMpuntuaciones().get(i).getOut().println(boundedDrivers);
-				// }
 				c.getOut().println(boundedDrivers);
 			}
 
@@ -964,12 +1016,6 @@ class Client extends Thread implements MAP {
 		c.getOut().println(MAP.BEGIN);
 	}
 
-	/*
-	 * private void cerrarSesion(Client cliente) {
-	 * 
-	 * 
-	 * }
-	 */
 	private void eliminarCliente(Client c) {
 
 		try {
@@ -1037,5 +1083,17 @@ class Client extends Thread implements MAP {
 
 	protected Socket getClient() {
 		return client;
+	}
+
+	protected boolean isDone() {
+		return done;
+	}
+
+	protected void setDone(boolean done) {
+		this.done = done;
+	}
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		throw new CloneNotSupportedException(); 
 	}
 }

@@ -19,7 +19,7 @@ import java.util.Stack;
  * @author Robin
  *
  */
-class Server extends Thread implements MAP{
+ final class Server extends Thread implements MAP{
 
 	private int port;
 	private static ServerSocket Sserver;
@@ -39,25 +39,22 @@ class Server extends Thread implements MAP{
 	protected Server (int port){
 		this.port=port;
 		this.active=true;
-		mapas = new Stack<>();
-		mandos = new Stack<>();
-		Mluces = new Stack<>();
-		Msonidos = new Stack<>();
-		Mpuntuaciones = new Stack<>();
-		drivers = new Stack<>();
-		anonimo = new Stack<>();
+		this.mapas = new Stack<>();
+		this.mandos = new Stack<>();
+		this.Mluces = new Stack<>();
+		this.Msonidos = new Stack<>();
+		this.Mpuntuaciones = new Stack<>();
+		this.drivers = new Stack<>();
+		this.anonimo = new Stack<>();
 	}
 	
 	public void run (){
 		this.setActive(true);
 		initServer();
 		initListener();
-		
-		
-		
 	}
 	
-	private void initServer() {
+	private final void initServer() {
 		
 		try {
 			Server.Sserver = new ServerSocket(this.port);
@@ -87,8 +84,9 @@ class Server extends Thread implements MAP{
 						//System.exit(1);
 						active=false;
 						closeServer();
-						System.exit(1);
 						e.printStackTrace();
+						System.exit(1);
+						
 					}
 				}
 				
@@ -96,17 +94,69 @@ class Server extends Thread implements MAP{
 		});this.server.start();
 	}
 
-	protected void tratarClient(BufferedReader in, PrintWriter out, Socket client) {
+	protected final void tratarClient(BufferedReader in, PrintWriter out, Socket client) {
 		Client c = new Client(in, out, client,this);c.start();this.anonimo.add(c);
 		
 	}
 
 	protected void closeServer() {
-		// TODO Auto-generated method stub
+		
+		try {
+			Client c = null;
+			for (int i = 0; i < this.getAnonimo().size() && c != null && c.isDone() == false; i++) {
+		
+					this.getAnonimo().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+				
+			}
+			for (int i = 0; i < this.getMandos().size() && c != null && c.isDone() == false; i++) {
+				
+					this.getMandos().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+					
+				
+			}
+			for (int i = 0; i < this.getMapas().size() && c != null && c.isDone() == false; i++) {
+				
+					this.getMapas().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+				
+				
+			}
+			for (int i = 0; i < this.getMluces().size() && c != null && c.isDone() == false; i++) {
+				
+					this.getMluces().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+				
+				
+			}
+			for (int i = 0; i < this.getMpuntuaciones().size() && c != null && c.isDone() == false; i++) {
+				
+					this.getMpuntuaciones().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+			
+				
+			}
+			for (int i = 0; i < this.getMsonidos().size() && c != null && c.isDone() == false; i++) {
+				
+					this.getMsonidos().remove(i);
+					c.getClient().close();
+					c.setDone(true);
+				
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 
-	private void initListener() {
+	private final void initListener() {
 		
 		this.listener = new Thread(new Runnable() {
 			
@@ -252,5 +302,6 @@ class Server extends Thread implements MAP{
 	protected Stack<Driver> getDrivers() {
 		return drivers;
 	}
+
 
 }

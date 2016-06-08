@@ -5,7 +5,7 @@ package server;
  * @author Robin
  *
  */
-public class Main {
+public final class Main {
 	
 	private static Server server;
 
@@ -18,17 +18,15 @@ public class Main {
 		try{
 			if (s!=null && !s.equals("") && s.length==2){
 				server = new Server (obtenerPuerto(s));
-				server.start();
 			}else{
 				server = new Server(MAP.PORT);
-				server.start();
 			}
+			server.start();
+			server.join();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
-		
-
 	}
 
 	private static int obtenerPuerto(String[] s) {
@@ -48,6 +46,10 @@ public class Main {
 		
 		
 		return port;
+	}
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		throw new CloneNotSupportedException(); 
 	}
 
 }
